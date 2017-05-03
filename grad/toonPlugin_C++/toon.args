@@ -1,0 +1,31 @@
+<!-- 
+toon pattern
+-->
+<args format="1.0">
+    <shaderType>
+        <tag value="pattern"/>
+    </shaderType>
+    <help>
+        Toon pattern plugin.
+    </help>
+        <!-- Inputs begin -->
+        <param name="enCurve"     label="Enable Curvature Control" type="int"   default="1" input="False" widget="checkbox" tag="int and pattern"/> 
+        <param name="cthres"     label="Curvature Threshold"     type="float" default="2.0"         input="True" min="-5" max="10" widget="default"/>
+        <param name="fthres"     label="Facing Threshold"         type="float" default="0.7"         input="True" min="-1" max="1" widget="default"/>
+        <param name="specRange" label="Specular Range"             type="float" default="1.8"         input="True" min="1" max="3" widget="default"/>
+        <param name="specColor" label="Specular Color"             type="color" default="1 1 1"     input="True" widget="color" tag="color and pattern"/>
+        <param name="baseColor" label="Base Color"                 type="color" default="1 0.5 0.5" input="True" widget="color" tag="color and pattern"/>
+        <param name="edgeColor" label="Edge Color"                 type="color" default="1 0 0"     input="True" widget="color" tag="color and pattern"/>
+        
+        <param name="enFake" label="Enable Fake Light" type="int"   default="0" input="False" widget="checkbox" tag="int and pattern"/>     
+        <param name="fake" label="Fake Light Direction" type="vector" default="1 1 1" widget="default"/>
+  
+        <!-- Inputs end -->
+    
+        <!-- Outputs begin -->
+        <output name="resultRGB"  tag="color|vector|normal|point|pattern"/>
+  
+        <!-- Outputs end -->
+  
+    <rfmdata nodeid="1053514" classification="rendernode/RenderMan/pattern"/>
+</args>

@@ -1,0 +1,365 @@
+source "/home/wanlyu20/mount/stuhome/vsfx705/mel/nFlakeMatrix.mel";
+
+global string $matrixWin = " ";
+global string $geomType;
+global string $widthSlider;
+global string $iterationSlider;
+global string $myRadioCollection;
+global string $item1, $item2, $item3, $item4, $item5, $item6, $item7, $item8;
+global string $transMinSlider;
+global string $transMaxSlider;
+global string $rotScaleSlider;
+global string $userNameSpace;
+global string $deleteNamespace;
+global int $namespaceCounter = 1;
+global vector $objPos[];
+global int $flag = 0;
+//global vector $randRot[];
+
+  
+//--------------------------------------------------
+// proc that generates the geoms
+//--------------------------------------------------
+global proc generateMatrix() {
+	global string $widthSlider;
+	global string $iterationSlider;
+	global string $myRadioCollection;
+	global string $item1, $item2, $item3, $item4, $item5, $item6, $item7;
+	global string $userNameSpace;
+	global int $namespaceCounter;
+	
+	//scaling constant
+	float $RAD_FACTOR[] = {0.7137*0.906/2.3296, 1/2.581926 / 1.014};
+	float $NORM_FACTOR[] = {1.5, 1.25};
+	  
+	float $rad = `floatSliderGrp -q -v $widthSlider`;
+	int $iteration = `intSliderGrp -q -v $iterationSlider`;
+	string $name;
+	//namespace operation
+	if(`radioButton -q -select defaultNamespace` == 1){
+		$name = namespaceOperation(" ", 0, $namespaceCounter);
+		$namespaceCounter ++;
+	}
+	else if(`radioButton -q -select userDefine` == 1){
+	    print("a\n");
+		$name = namespaceOperation(`textField -q -text mytext`, 1, 0);
+		print $name;
+	}
+	else{
+		//error;
+	}
+	
+	if(`iconTextRadioButton -q -select tetra` == 1){
+		sierpinski($iteration, $rad, $name);
+	}
+	else if(`iconTextRadioButton -q -select cube` == 1){
+		mengerSponge($iteration, $rad, $name);
+	}
+	else if(`iconTextRadioButton -q -select octa` == 1){
+		octahedron($iteration, $rad, $name);
+	}
+	else if(`iconTextRadioButton -q -select dodeca` == 1){
+		nFlake($rad, 0, $iteration, 1, $name, $RAD_FACTOR, $NORM_FACTOR);
+		nFlakeGrouping($iteration, 0, $name);
+	}
+	else if(`iconTextRadioButton -q -select icosa` == 1){
+		nFlake($rad, 1, $iteration, 1, $name, $RAD_FACTOR, $NORM_FACTOR);
+		nFlakeGrouping($iteration, 1, $name);
+	}
+	else{
+		//;
+	}
+	//print("The current value of the slider is " + $v + "\n");
+	//cylinder -heightRatio $ratio -r $rad;
+	
+	}
+	
+global proc deleteNamespace(){
+    clearNamespace(`textField -q -text myName`);
+}
+
+global proc changeWidth(){
+	global string $widthSlider;
+	float $rad, $width, $scaleFactor;
+	$width = `floatSliderGrp -q -v $widthSlider`;
+	
+	if(size(`ls -sl`) != 0){
+		string $currentObj[] = `ls -sl`;
+		retrieve();
+		string $name[] = `ls -sl`;
+		
+		if(`getAttr ($name[0] + ".geomLabel")` == 1){
+			$rad = `polyPyramid -q -w $name[0]`; 
+		}
+		else if(`getAttr ($name[0] + ".geomLabel")` == 2){
+			$rad = `polyCube -q -w $name[0]`;
+		}
+		else if(`getAttr ($name[0] + ".geomLabel")` >= 3){
+			$rad = `polyPlatonicSolid -q -r $name[0]`;
+		}
+		else{
+			//error;
+		}
+		
+		$scaleFactor = $width / $rad;
+		select -r $currentObj[0];
+		scale $scaleFactor $scaleFactor $scaleFactor;
+	}
+	else{
+		print(`floatSliderGrp -q -v $widthSlider`);
+	}
+}
+
+global proc resetTool(){
+	select -all;
+	delete;
+	
+	global int $namespaceCounter;
+	$namespaceCounter = 1;
+	
+	namespace -set ":";
+	string $listNamespace[] = `namespaceInfo -listOnlyNamespaces`;
+	int $i;
+	for($i = 0; $i < size($listNamespace); $i++){
+		if($listNamespace[$i] == "UI" || $listNamespace[$i] == "shared"){
+			//keep them;
+		}
+		else{
+			namespace -rm $listNamespace[$i];
+		}
+	}
+}
+
+global proc addRand(){
+	global string $transMinSlider;
+	global string $transMaxSlider;
+	global string $rotScaleSlider;
+	global vector $objPos[];
+	//global vector $randRot[];
+	global int $flag;
+	
+	string $name[] = `ls -sl`;
+	
+	select -cl;
+	float $minTrans = `floatSliderGrp -q -v $transMinSlider`;
+	float $maxTrans = `floatSliderGrp -q -v $transMaxSlider`;
+	float $rotScale = `floatSliderGrp -q -v $rotScaleSlider`;
+	
+	int $i;
+	for($i = 0; $i < size($name); $i++){
+		vector $tempTrans; 
+		vector $tempRot;
+		
+		/*$tempTrans.x = rand($minTrans, $maxTrans);
+		$tempTrans.y = rand($minTrans, $maxTrans);
+		$tempTrans.z = rand($minTrans, $maxTrans);
+		
+		$tempRot.x = rand(0, $rotScale);
+		$tempRot.y = rand(0, $rotScale);
+		$tempRot.z = rand(0, $rotScale);*/
+		float $randFactor = rand(-1, 1);
+		float $x, $y, $z;
+		if($randFactor >= 0){
+			$x = rand(-$maxTrans, -$minTrans);
+		}
+		else{
+			$x = rand($minTrans, $maxTrans);
+		}
+		
+		$randFactor = rand(-1, 1);
+		if($randFactor >= 0){
+			$y = rand(-$maxTrans, -$minTrans);
+		}
+		else{
+			$y = rand($minTrans, $maxTrans);
+		}
+		
+		$randFactor = rand(-1, 1);
+		if($randFactor >= 0){
+			$z = rand(-$maxTrans, -$minTrans);
+		}
+		else{
+			$z = rand($minTrans, $maxTrans);
+		}
+		
+		$tempTrans = <<$x, $y, $z>>;
+		$tempRot = <<rand(0, $rotScale), rand(0, $rotScale), rand(0, $rotScale)>>;
+		
+		if($flag == 0){	
+			$objPos[$i] = `xform -worldSpace -q -translation $name[$i]`;
+			//$randRot[$i] = $tempRot;
+		}
+		
+		select -r $name[$i];
+		move -r ($tempTrans.x) ($tempTrans.y) ($tempTrans.z);
+		rotate   ($tempRot.x) ($tempRot.y) ($tempRot.z);
+	}
+	$flag = 1;
+}
+
+global proc setKey(){
+	setKeyframe;
+}
+
+global proc returnPos(){
+	global vector $objPos[];
+	global int $flag;
+	//global vector $randRot[];
+	
+	float $tX, $tY, $tZ, $rX, $rY, $rZ;
+	string $name[] = `ls -sl`;
+	select -cl;
+	int $i;
+	for($i = 0; $i < size($name); $i++){
+		select -r $name[$i];
+		vector $tempTrans = $objPos[$i];
+		//vector $tempRot = $randRot[$i];
+		//print $tempTrans;
+		//print $tempRot;
+		
+		$tX = $tempTrans.x;
+		$tY = $tempTrans.y;
+		$tZ = $tempTrans.z;
+		
+		//$rX = - $tempRot.x;
+		//$rY = - $tempRot.y;
+		//$rZ = - $tempRot.z;
+		
+		move $tX $tY $tZ;
+		rotate 0 0 0;
+	}
+	
+	clear($objPos);
+	$flag = 0;
+	//clear($randRot);
+}
+	
+	  
+//--------------------------------------------------
+// Adds UI widgets to main window
+//--------------------------------------------------
+global proc addUIWidgets() {
+	global string $geomType;
+	global string $widthSlider;
+	global string $iterationSlider;
+	global string $myRadioCollection;
+	global string $item1, $item2, $item3, $item4, $item5, $item6, $item7;
+	global string $userNameSpace;
+	global string $transMinSlider;
+	global string $transMaxSlider;
+	global string $rotScaleSlider;
+	
+    columnLayout -adjustableColumn true;
+        frameLayout -label "Geometry Type" -cll true; 
+                text " ";
+    	         gridLayout -numberOfColumns 5 -cellWidthHeight 80 70;
+                	 /*radioCollection;  
+                	    $item1 = `radioButton -label "Tetrahedron" -select tetra`;   
+                	    $item2 = `radioButton -label "Menger Sponge" cube`;
+                	    $item3 = `radioButton -label "Octahedron" octa`;
+                	    $item4 = `radioButton -label "Dodecahedron" dodeca`;
+                	    $item5 = `radioButton -label "Icosahedron" icosa`;
+                	    text " ";*/
+                	    iconTextRadioCollection;
+                    	    iconTextRadioButton -select -st "iconAndTextVertical" -i1 "/home/wanlyu20/mount/stuhome/vsfx705/tiffs/icon1.png" -l "Tetrahedron" tetra;
+                    	    iconTextRadioButton -st "iconAndTextVertical" -i1 "/home/wanlyu20/mount/stuhome/vsfx705/tiffs/icon2.png" -l "Menger Sponge" cube;
+                    	    iconTextRadioButton -st "iconAndTextVertical" -i1 "/home/wanlyu20/mount/stuhome/vsfx705/tiffs/icon3.png" -l "Ocatahedron" octa;
+                    	    iconTextRadioButton -st "iconAndTextVertical" -i1 "/home/wanlyu20/mount/stuhome/vsfx705/tiffs/icon4.png" -l "Dodecahedron" dodeca;
+                    	    iconTextRadioButton -st "iconAndTextVertical" -i1 "/home/wanlyu20/mount/stuhome/vsfx705/tiffs/icon5.png" -l "Icosahedron" icosa;
+                	setParent ..;
+                	text " ";
+                 setParent ..;
+        setParent ..;
+            
+	
+	    frameLayout -label "Value Inputs" -cll true;
+	    text "";
+	    $widthSlider = `floatSliderGrp -columnWidth 1 100
+	                    -label "Sphere Radius"
+	                    -field true
+	                    -value 1
+	                    -min 0 -max 10
+						-fieldMaxValue 100
+						-dc changeWidth`;
+	
+	    $iterationSlider = `intSliderGrp -label "Iteration" 
+						-columnWidth 1 100
+						-field true
+    					-minValue 1 -maxValue 6
+    					-fieldMinValue 1 -fieldMaxValue 7
+    					-value 1`;
+    	text " ";
+    	setParent ..;
+	    
+	    frameLayout -label "NameSpace" -cll true;
+	    text " ";
+	    gridLayout -numberOfColumns 3 -cellWidthHeight 110 20 -pos 10 10;
+                	 radioCollection;  
+                	    $item6 = `radioButton -label "Default" -select defaultNamespace`;   
+                	    $item7 = `radioButton -label "User Defined" userDefine`; 
+                	    $useNameSpace = `textField -h 10 -w 50 mytext`; 
+                	    text " ";
+                	    text " ";
+                	    text " ";
+                	    $item8 = `radioButton -label "Clear Namespace" deleteNamespace`; 
+                	    $deleteNamespace = `textField -h 10 -w 50 myName`; 
+                	    button -label "Clear" -command "deleteNamespace";
+                	    text " ";
+                	 setParent ..;
+                 setParent ..;
+	    setParent ..;
+	    
+	    frameLayout -label "Animation" -cll true;
+		text "";
+	    $transMinSlider = `floatSliderGrp -columnWidth 1 100
+	                    -label "Min Translation"
+	                    -field true
+	                    -value 0
+	                    -min 0 -max 10
+						-fieldMaxValue 100`;
+						
+		$transMaxSlider = `floatSliderGrp -columnWidth 1 100
+	                    -label "Max Translation"
+	                    -field true
+	                    -value 0
+	                    -min 0 -max 50
+						-fieldMaxValue 100`;
+	
+	    $rotScaleSlider = `floatSliderGrp -columnWidth 1 100
+	                    -label "Rotation Amount"
+	                    -field true
+	                    -value 0
+	                    -min 0 -max 360
+						-fieldMaxValue 360`;
+    	//text " ";
+			//gridLayout -numberOfColumns 3 -cellWidthHeight 110 20 -pos 10 10;
+			//formLayout;
+            	button -label "Add Random Movement" -command "addRand" -w 50;
+				button -label "Set Keyframe" -command "setKey" -w 50;
+				button -label "Return to Position" -command "returnPos" -w 50;    	
+        	//setParent ..;
+		text " ";
+	    setParent ..;
+	    
+	    button  -label "Generate Matrix" -command "generateMatrix" -w 20 -bgc 1 0.618 0.392;
+		button -label "Reset Tool" -command "resetTool" -w 20;
+	}
+  
+//--------------------------------------------------
+// Main proc
+//--------------------------------------------------
+global proc matrixUI() {
+	global string $matrixWin; 
+	  
+	int $doesExist = `window -exists $matrixWin`;
+	if($doesExist == 0) {
+	    $matrixWin = `window -w 300 -h 300
+	                        -retain
+	                        -topLeftCorner 500 1000
+	                        -title "3D n-Flakes Tool"`;
+	    addUIWidgets();
+	    }
+	showWindow $matrixWin;
+	}
+  
+matrixUI();

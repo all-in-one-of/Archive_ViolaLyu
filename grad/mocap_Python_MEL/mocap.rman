@@ -1,0 +1,153 @@
+# Malcolm Kesson
+# Nov 16 2012
+# Viola Lyu
+# Mar 4 2016
+# mocap.rman
+rman "-version 1" {
+  
+Declare param {string mocap_datapath} {
+    label "MoCap Data File"
+    description "Source mocap data file."
+    subtype file
+    range {*.txt}
+    }
+Declare param {float mocap_scale} {
+    label "MoCap Scaling"
+    subtype slider
+    range {0.001 1 .001}
+    description "Reduces the dimensions of the mocap performance."
+    }
+Declare param {int mocap_geo} {
+    label "Render As"
+    subtype selector
+    range {
+        "Points"  0
+        "Curves"  1
+        "Blobby Surface"  2
+        "Blobby Volume" 3
+        }
+    }
+Declare param {float mocap_width} {
+    label "Geometry Size"
+    subtype slider
+    range {0.001 5 .001}
+    description "Points and Curves(constantwidth). Blobby scale"
+    }
+Declare param {float mocap_taper} {
+    label "Taper Percentage"
+    subtype slider
+    range {-1.0 1.0}
+    description ""
+    }
+Declare param {int mocap_trailMin} {
+    label "Trail Min"
+    subtype slider
+    range {0 1000 1}
+    description "Places geometry at preceeding data locations."
+    }
+Declare param {int mocap_trailMax} {
+    label "Trail Max"
+    subtype slider
+    range {0 1000 1}
+    description "Places geometry at preceeding data locations."
+    }
+Declare param {int mocap_geoNum} {
+    label "Number of Trails"
+    subtype slider
+    range {0 20 1}
+    description ""
+    }
+Declare param {float mocap_numRand} {
+    label "Number Randomness"
+    subtype slider
+    range {0.0 1.0}
+    description ""
+    }
+Declare param {float mocap_jitter} {
+    label "Jitter"
+    subtype slider
+    range {0.0 3.0}
+    description ""
+    }
+Declare param {int mocap_seed} {
+    label "Random Seed"
+    subtype slider
+    range {0 2000 1}
+    description ""
+    }
+Declare param {int mocap_step} {
+    label "Step Size"
+    subtype slider
+    range {1 20 1}
+    description "Use consecutive or skipped data locations."
+    }
+Declare param {int mocap_cache} {
+    label "Caching Behavior"
+    subtype selector
+    range {
+        "Compute" 0
+        "Reuse"   1
+        "Disable" 2
+        }
+    }
+# The Collection and NodeOptions blocks enable a Pre-Shape MEL script
+# to be assigned to "RenderMan Controls->Geometric Settings" panel.
+Collection mocap_OptionalGeometricSettings {
+    param mocap_datapath {
+        default ""
+        state optional
+        }
+    param mocap_scale {
+        default 0.001
+        state optional
+        }
+    param mocap_geo {
+        default 0
+        state optional
+        }
+    param mocap_width {
+        default 0.001
+        state optional
+        }
+    param mocap_taper {
+        default -1.0
+        state optional
+        }
+    param mocap_trailMin {
+        default 0
+        state optional
+        }
+    param mocap_trailMax {
+        default 0
+        state optional
+        }
+    param mocap_geoNum {
+        default 0
+        state optional
+        }
+    param mocap_numRand {
+        default 0.0
+        state optional
+        }
+    param mocap_jitter {
+        default 0.0
+        state optional
+        }
+    param mocap_seed {
+        default 0
+        state optional
+        }
+    param mocap_step {
+        default 1
+        state optional
+        }
+    param mocap_cache {
+        default 0
+        state optional
+        }
+    }
+NodeOptions {kGeometric kParticle} {
+       reference Collection optionalGeometricSettings
+       reference Collection mocap_OptionalGeometricSettings
+    }
+}

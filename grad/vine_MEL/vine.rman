@@ -1,0 +1,220 @@
+# vine.rman file
+rman "-version 1" {
+Declare param {int vine_addStem} {
+    label "Add Vine Stems"
+    description "No description."
+    subtype switch
+    }
+    
+Declare param {string vine_blobFile} {
+    label "Stem File"
+    description "No description."
+    subtype file
+    range {*.rib}
+    }
+    
+Declare param {int vine_vSeed} {
+    label "Stem Random Seed"
+    subtype slider
+    range {0 1000 1}
+    description "No description."
+    }
+  
+Declare param {float vine_vden} {
+    label "Stem Density"
+    subtype slider
+    range {0.0001 1.0}
+    description "No description."
+    }
+  
+Declare param {float vine_vstep} {
+    label "Stem Step"
+    subtype slider
+    range {0.0001 5.0}
+    description "No description."
+    }
+  
+Declare param {float vine_vstepRand} {
+    label "Stem Step Randomness"
+    subtype slider
+    range {0 5.0}
+    description "No description."
+    }
+    
+Declare param {float vine_vRot} {
+    label "Stem Step Rotation"
+    subtype slider
+    range {0.0 90.0}
+    description "No description."
+    }
+  
+  
+Declare param {float vine_vRad} {
+    label "Stem Radius"
+    subtype slider
+    range {0.0001 2.0}
+    description "No description."
+    }
+  
+Declare param {float vine_vOffset} {
+    label "Stem Offset"
+    subtype slider
+    range {0.0001 5.0}
+    description "No description."
+    }
+  
+Declare param {float vine_sTransition} {
+    label "Stem Transition"
+    subtype slider
+    range {0 1}
+    description "No description."
+    }
+  
+  
+Declare param {int vine_addLeaf} {
+    label "Add Leaves"
+    description "No description."
+    subtype switch
+    }
+  
+Declare param {int vine_lSeed} {
+    label "Leaf Random Seed"
+    subtype slider
+    range {0 1000 1}
+    description "No description."
+    }
+  
+Declare param {float vine_lden} {
+    label "Leaf Density"
+    subtype slider
+    range {0.0001 1.0}
+    description "No description."
+    }
+  
+Declare param {float vine_lTrans} {
+    label "Vary Placement"
+    subtype slider
+    range {0.001 3.0}
+    description "No description."
+    }
+  
+Declare param {float vine_lRot} {
+    label "Vary Rotation"
+    subtype slider
+    range {0.0 180.0}
+    description "No description."
+    }
+  
+Declare param {float vine_lScale} {
+    label "Vary Size"
+    subtype slider
+    range {0.0001 3.0}
+    description "No description."
+    }
+    
+Declare param {string vine_lfile1} {
+    label "Leaf Type 1 File"
+    description "No description."
+    subtype file
+    range {*.rib}
+    }
+  
+Declare param {string vine_lfile2} {
+    label "Leaf Type 2 File"
+    description "No description."
+    subtype file
+    range {*.rib}
+    }
+  
+Declare param {float vine_lmix} {
+    label "Leaf Type Mix"
+    subtype slider
+    range {0 1}
+    description "No description."
+    }
+  
+Declare param {float vine_lTransition} {
+    label "Leaf Transition"
+    subtype slider
+    range {0 1}
+    description "No description."
+    }
+  
+  
+Declare param {int vine_addFlower} {
+    label "Add Flowers"
+    description "No description."
+    subtype switch
+    }
+  
+Declare param {int vine_fSeed} {
+    label "Flower Random Seed"
+    subtype slider
+    range {0 1000}
+    description "No description."
+    }
+  
+Declare param {float vine_fden} {
+    label "Flower Density"
+    subtype slider
+    range {0.0001 1.0}
+    description "No description."
+    }
+  
+Declare param {float vine_fTrans} {
+    label "Vary Offset"
+    subtype slider
+    range {0 3.0}
+    description "No description."
+    }
+  
+Declare param {float vine_fRot} {
+    label "Vary Rotation"
+    subtype slider
+    range {0 180}
+    description "No description."
+    }
+  
+Declare param {float vine_fScale} {
+    label "Vary Size"
+    subtype slider
+    range {0.001 5.0}
+    description "No description."
+    }
+  
+Declare param {string vine_ffile1} {
+    label "Flower Type 1 File"
+    description "No description."
+    subtype file
+    range {*.rib}
+    }
+  
+Declare param {string vine_ffile2} {
+    label "Flower Type 2 File"
+    description "No description."
+    subtype file
+    range {*.rib}
+    }
+  
+Declare param {float vine_fmix} {
+    label "Flower Type Mix"
+    subtype slider
+    range {0 1}
+    description "No description."
+    }
+  
+Declare param {float vine_fTranstion} {
+    label "Flower Transition"
+    subtype slider
+    range {0 1}
+    description "No description."
+    }
+  
+  
+Declare param {int vine_useMarker} {
+    label "Use Marker"
+    description "No description."
+    subtype switch
+    }
+  
+}

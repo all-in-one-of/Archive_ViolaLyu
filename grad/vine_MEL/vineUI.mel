@@ -1,0 +1,323 @@
+//    vine_UI
+  
+//    GuoQiang Xie (Gavin)
+//    cg_talk@hotmail.com
+//    for VSFX 705 class
+  
+// future work:
+//     add more attrs
+//     if org objs have history, clean work... line 220
+global proc vine_UI()
+{
+if(`window -exists Vine_Generator`)
+    deleteUI Vine_Generator;
+    window  -menuBar true -width 500 -t "Vine Generator     Version .8" Vine_Generator;
+    scrollLayout scrollLayout;
+        columnLayout -adjustableColumn true;
+ //------------------------------------------------------------------      
+ //Main               
+            text -label "---=== Vine Generator ===---" -h 30  -align "center";
+            textFieldGrp  -label "Prefix:" -text  "vine" prefix_grp;       
+ //------------------------------------------------------------------  
+ //Objects             
+            frameLayout -collapsable 1 -label "Objects"
+                -borderStyle "in";
+                columnLayout;
+                    textFieldButtonGrp -label "Base Mesh" -text "bunny_mesh" -buttonLabel "select" 
+                                       -buttonCommand "add_objs_to_UI(\"base_mesh_grp\")" base_mesh_grp;
+                    textFieldButtonGrp -label "Leaf Mesh" -text "leaf_mesh" -buttonLabel "select"
+                                       -buttonCommand "add_objs_to_UI(\"leaf_mesh_grp\")" leaf_mesh_grp;
+                    textFieldButtonGrp -label "Flower Mesh" -text "flower_mesh" -buttonLabel "select"
+                                       -buttonCommand "add_objs_to_UI(\"flower_mesh_grp\")" flower_mesh_grp;
+                    setParent ..;
+                setParent ..;
+ //------------------------------------------------------------------     
+ //Direction             
+            frameLayout -collapsable 1  -label "Direction"
+                -borderStyle "out";
+                columnLayout;
+                   textFieldButtonGrp -label "Start Locator" -text "locator1" -buttonLabel "select"
+                                      -buttonCommand "string $start_locator[]=`ls -sl`;textFieldButtonGrp -e -text $start_locator[0] start_locator_grp" start_locator_grp;
+                   textFieldButtonGrp -label "Next Locator" -text "locator2" -buttonLabel "select"
+                                      -buttonCommand "string $end_locator[]=`ls -sl`;textFieldButtonGrp -e -text $end_locator[0] end_locator_grp" end_locator_grp;
+                   checkBox -label "Using Guide Curve" -changeCommand "int $a = abs(int(`textFieldButtonGrp -q -enable guide_curve_grp`) -1); textFieldButtonGrp -e -enable  $a guide_curve_grp" check_guide_grp;
+                   textFieldButtonGrp -label "Guide Curve" -text "" -buttonLabel "select" -enable 0
+                                      -buttonCommand "string $guide_curve[]=`ls -sl`;textFieldButtonGrp -e  -text $guide_curve[0] guide_curve_grp" guide_curve_grp;
+                    setParent ..;
+                setParent ..;
+/*                
+global proc guide_curve_UI(string $UIGrp)
+{
+    string $all[]=`ls -sl`;
+    string $text;
+    for($each in $all)   
+        $text +=" " + $each;      
+    textFieldButtonGrp -q -enable  guide_curve_grp;
+}*/
+  
+ //------------------------------------------------------------------     
+ //Global            
+  
+            frameLayout -collapsable 1 -cl 0 -label "Global"
+                -borderStyle "etchedIn";
+                columnLayout;
+                    floatFieldGrp  -label "Sampling" -numberOfFields 1 -precision 2 -v1 .25 global_sampling_grp;
+                    /* add later
+                    rowLayout -numberOfColumns 7
+                        -columnWidth6 10 10 10 10 10 10 
+                        -adjustableColumn 2
+                        -columnAlign  1 "right"
+                        -columnAttach 1 "left"     0
+                        -columnAttach 2 "left"  0
+                        -columnAttach 3 "left"  0;
+                        text -l "Offset:";
+                        floatField -precision 2 -v 0 offset;
+                        text -l " +  rand(";    
+                        floatField -precision 2 -v 0 offset_rand_a;
+                        text -l ",";
+                        floatField -precision 2 -v 1 offset_rand_b;
+                        text -l ")";
+                        setParent ..;
+                        */
+                    setParent ..;
+                setParent ..;
+ //------------------------------------------------------------------   
+ //Main Stem             
+  
+            frameLayout -collapsable 1 -cl 0 -label "Main Stem"
+                -borderStyle "etchedIn";
+                columnLayout;
+                    floatFieldGrp  -label "Length" -numberOfFields 1 -precision 2 -v1 15 main_length_grp;
+                    floatFieldGrp  -label "Profile Circle Size " -numberOfFields 1 -precision 2 -v1  .05 profile_size_grp;
+                    floatFieldGrp  -label "Tip Scale" -numberOfFields 1 -precision 2 -v1 .3 tip_scale_grp;                   
+                    rowLayout -numberOfColumns 5
+                        -columnWidth5 100 30 10 30 10 
+                        -adjustableColumn 2
+                        -columnAlign  1 "right"
+                        -columnAttach 1 "both"     0
+                        -columnAttach 2 "both"  0
+                        -columnAttach 3 "both"  0;
+                        text -l "Rotation:   rand(";
+                        floatField -precision 2 -v -18 main_rand_a;
+                        text -l ",";
+                        floatField -precision 2 -v 18 main_rand_b;
+                        text -l ")";
+                        setParent ..;
+                    setParent ..;
+                setParent ..;
+ //------------------------------------------------------------------    
+ //Branches                            
+            frameLayout -collapsable 1 -cl 0 -label "Branches"
+                -borderStyle "etchedOut";
+                columnLayout;
+                    floatFieldGrp  -label "Length" -numberOfFields 1 -precision 2 -v1 2  branch_length_grp;
+                    intFieldGrp  -label "Branch Ammount " -numberOfFields 1 -v1 20  branch_ammount_grp;
+                    rowLayout -numberOfColumns 5
+                        -columnWidth5 100 30 10 30 10 
+                        -adjustableColumn 2
+                        -columnAlign  1 "right"
+                        -columnAttach 1 "both"     0
+                        -columnAttach 2 "both"  0
+                        -columnAttach 3 "both"  0;
+                        text -l "Rotation:   rand(";
+                        floatField -precision 2 -v -60 branch_rand_a;
+                        text -l ",";
+                        floatField -precision 2 -v 60 branch_rand_b;
+                        text -l ")";
+                        setParent ..;                                   
+                    setParent ..;
+                setParent ..;
+ //------------------------------------------------------------------    
+ //Leaves              
+  
+            frameLayout -collapsable 1 -cl 0 -label "Leaves"
+                -borderStyle "etchedOut";
+                columnLayout;                  
+                    intFieldGrp  -label "Ammount on Main Stem " -numberOfFields 1 -v1 30 leaves_on_main_grp;
+                    intFieldGrp  -label "Ammount on Each Branch " -numberOfFields 1 -v1 2  leaves_on_branch_grp;                  
+                    rowLayout -numberOfColumns 5
+                        -columnWidth5 100 30 10 30 10 
+                        -adjustableColumn 2
+                        -columnAlign  1 "right"
+                        -columnAttach 1 "both"     0
+                        -columnAttach 2 "both"  0
+                        -columnAttach 3 "both"  0;
+                        text -l "Scale:   rand(";
+                        floatField -precision 2 -v .5 leaves_rand_a;
+                        text -l ",";
+                        floatField -precision 2 -v 1.0 leaves_rand_b;
+                        text -l ")";
+                        setParent ..;                       
+                    setParent ..;
+                setParent ..;
+ //------------------------------------------------------------------  
+ //Flowers                
+             frameLayout -collapsable 1 -cl 0 -label "Flowers"
+                -borderStyle "etchedOut";
+                columnLayout;               
+                    intFieldGrp  -label "Ammount on Main Stem" -numberOfFields 1  -v1 5  flowers_on_main_grp;
+                    intFieldGrp  -label "Ammount on Each Branch" -numberOfFields 1  -v1 0  flowers_on_branch_grp;
+                    rowLayout -numberOfColumns 5
+                        -columnWidth5 100 30 10 30 10 
+                        -adjustableColumn 2
+                        -columnAlign  1 "right"
+                        -columnAttach 1 "both"     0
+                        -columnAttach 2 "both"  0
+                        -columnAttach 3 "both"  0;
+                        text -l "Scale:   rand(";
+                        floatField -precision 2 -v .5 flowers_rand_a;
+                        text -l ",";
+                        floatField -precision 2 -v 1.0 flowers_rand_b;
+                        text -l ")";
+                        setParent ..;                        
+                    setParent ..;
+                setParent ..;
+                          
+           button -label "Create" -h 40  -command "vine_cmd";
+showWindow;
+}
+  
+global proc add_objs_to_UI(string $UIGrp)
+{
+    string $all[]=`ls -sl`;
+    string $text;
+    for($each in $all)   
+        $text +=" " + $each;      
+    textFieldButtonGrp -e -text $text $UIGrp;
+}
+  
+  
+global proc vine_cmd()
+{            
+    //prefix
+     string $prefix_grp = `textFieldGrp -q  -text prefix_grp`;  
+    //objects
+     string $base_mesh_grp = `textFieldButtonGrp -q -text base_mesh_grp`;            
+     string $leaf_mesh_grp = `textFieldButtonGrp -q -text leaf_mesh_grp`;  
+     string $flower_mesh_grp = `textFieldButtonGrp -q -text flower_mesh_grp`;
+    //direction               
+     string $start_locator_grp = `textFieldButtonGrp -q -text start_locator_grp`;
+     string $end_locator_grp = `textFieldButtonGrp -q -text end_locator_grp`; 
+     int $check_guide_grp = `checkBox -q -v check_guide_grp`;
+     string $guide_curve_grp;  
+     if($check_guide_grp == 1)
+         $guide_curve_grp = `textFieldButtonGrp -q -text guide_curve_grp`; 
+     else
+         $guide_curve_grp = ""; 
+    //global             
+     float $global_sampling_grp = `floatFieldGrp  -q -v1 global_sampling_grp`;
+    //main     
+     float $main_length_grp = `floatFieldGrp  -q -v1 main_length_grp`;
+     float $profile_size_grp = `floatFieldGrp  -q -v1 profile_size_grp`;  
+     float $tip_scale_grp = `floatFieldGrp -q -v1 tip_scale_grp`; 
+     float $main_rand_a = `floatField -q -v main_rand_a`; 
+     float $main_rand_b = `floatField -q -v main_rand_b`;   
+    //branch
+     float $branch_length_grp = `floatFieldGrp -q -v1 branch_length_grp`; 
+     float $branch_ammount_grp = `intFieldGrp -q -v1 branch_ammount_grp`;             
+     float $branch_rand_a = `floatField -q -v branch_rand_a`; 
+     float $branch_rand_b = `floatField -q -v branch_rand_b`;            
+    //leaves
+     float $leaves_on_main_grp = `intFieldGrp -q -v1 leaves_on_main_grp`; 
+     float $leaves_on_branch_grp = `intFieldGrp -q -v1 leaves_on_branch_grp`; 
+     float $leaves_rand_a = `floatField -q -v leaves_rand_a`; 
+     float $leaves_rand_b = `floatField -q -v leaves_rand_b`;            
+    //flowers            
+     float $flowers_on_main_grp = `intFieldGrp -q -v1 flowers_on_main_grp`; 
+     float $flowers_on_branch_grp = `intFieldGrp -q -v1 flowers_on_branch_grp`; 
+     float $flowers_rand_a = `floatField -q -v flowers_rand_a`; 
+     float $flowers_rand_b = `floatField -q -v flowers_rand_b`;   
+     
+     //detective mutiple objects or components
+     string $dup_mesh[];
+     string $new_temp_obj[];    
+     string $buffer[];
+     $numTokens = tokenize($base_mesh_grp, $buffer);  
+          
+    if($numTokens > 1)  
+      {        
+       string $org_obj[];
+       $numTokens = `tokenize $buffer[0] "." $org_obj`;
+       //************ face component begin  ************
+       if($numTokens > 1)   
+       {                      
+            $new_temp_obj = `duplicate -rr $org_obj[0]`;
+            string $result = substituteAllString($base_mesh_grp, $org_obj[0], $new_temp_obj[0]);
+            //result is a string, I need to convert to string[], since polyChipOff only accpet string[]
+            string $new_obj_faces[];
+            $numTokens = `tokenize $result $new_obj_faces`;
+            polyChipOff -ch 1 -kft 1 -dup 1 -off 0 $new_obj_faces;
+            
+            string $new_obj[];
+            $numTokens = `tokenize $new_obj_faces[0] "." $new_obj`;
+            
+            string $new_obj_shape[] = `listRelatives -s $new_obj[0]`;
+            string $out_mesh[]=`polySeparate -rs 1 -ch 1 $new_obj_shape[0]`;
+            //need $out_mesh[1]   
+           $base_mesh_grp = $out_mesh[1];
+       }    
+       //******** face component end  ************
+        else // mutiple objects,  union them begin    
+       {
+       $dup_mesh = `duplicate -rr $buffer`;
+       for($i = 0; $i < size($dup_mesh)-1; $i++)
+          {
+          $new_temp_obj = `polyBoolOp -op 1 -ch 0 -useThresholds 1 -preserveColor 0 $dup_mesh[$i] $dup_mesh[$i+1]`;
+          $dup_mesh[$i+1] = $new_temp_obj[0];    
+          }
+        $base_mesh_grp = $new_temp_obj[0];
+        }
+        
+      }       
+    //mutiple objects,  union them end
+    
+          
+      string $leaf_mesh_grp_buffer[];    
+      $numTokens = tokenize($leaf_mesh_grp, $leaf_mesh_grp_buffer);  
+  
+      string $flower_mesh_grp_buffer[];  
+      $numTokens = tokenize($flower_mesh_grp, $flower_mesh_grp_buffer);
+  
+             
+    //data input ------------------------------------------
+    //mesh
+     vine_doIt(  
+                 $prefix_grp,
+                 $base_mesh_grp,   
+                 $leaf_mesh_grp_buffer, 
+                 $flower_mesh_grp_buffer,
+     //direction
+                 $start_locator_grp,
+                 $end_locator_grp,
+                 $guide_curve_grp,
+     //global             
+                 $global_sampling_grp,
+     //main
+                 $main_length_grp,
+                 $profile_size_grp,
+                 $tip_scale_grp,
+                 $main_rand_a,
+                 $main_rand_b,
+     //branch
+                 $branch_length_grp,
+                 $branch_ammount_grp,
+                 $branch_rand_a,
+                 $branch_rand_b,
+     //leaves 
+                 $leaves_on_main_grp,
+                 $leaves_on_branch_grp,
+                 $leaves_rand_a,
+                 $leaves_rand_b,
+     //flowers
+                 $flowers_on_main_grp,
+                 $flowers_on_branch_grp,
+                 $flowers_rand_a,
+                 $flowers_rand_b);
+     //clean scene
+     if($new_temp_obj[0]!="")
+        delete  $new_temp_obj;
+  
+}
+  
+vine_UI;
+

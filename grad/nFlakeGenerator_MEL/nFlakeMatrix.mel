@@ -1,0 +1,388 @@
+//contains all procs used in nFlake UI
+
+/*
+	sierpinski(), mengerSponge(), octahedron(), nFlake(),
+	clearNamespace(), namespaceOperation(), 
+	nFlakeGrouping(), retrieve();
+*/
+
+//@author: Viola | Date: 01/18/2016
+//a proc that generates the sierpinski tetrahedron
+//inputs: iteration number, side length
+
+global proc sierpinski(int $iteration, float $width, string $namespace){
+	
+	string $temp = ":" + $namespace;
+	if(`namespace -exists $temp` == 1){
+		confirmDialog -title "Error" -message "Namespace already exists!" -button "Cancel" -cancelButton "Cancel";
+	}
+	else{
+		namespace -set ":";
+		namespace -add $namespace;
+		namespace -set $namespace;
+		
+		float $move_x, $move_y, $move_z;
+		string $groupName;
+		int $counter = 1;
+		string $objName;
+	
+		//main method
+		while($counter <= $iteration) {
+			//on first iteration, create the reference obj
+			if($counter == 1) {
+				polyPyramid -w $width -ns 3;
+				addAttr -ln geomLabel -at byte;
+				string $name[] = `ls -sl`;
+				setAttr ($name[0] + ".geomLabel") 1;
+			}
+			//instance the result of last iteration and move it along vectors
+			else {
+				if($counter != 2)
+					$width *= 2;
+				instance;		
+				$move_x = sqrt(3) / 2 * $width;
+				$move_y = 0;
+				$move_z = $width / 2;
+			
+				move $move_x $move_y $move_z;
+			
+				instance;
+				$move_x = 0;
+				$move_z = $width;
+				move $move_x $move_y $move_z;
+		
+				instance;
+				$move_x = sqrt(3) / 6 * $width;
+				$move_y = sqrt(6) / 3 * $width;
+				$move_z = $width / 2;
+				move $move_x $move_y $move_z;
+				
+				//grouping
+				if($counter == 2) 
+					$objName = $namespace + ":pPyramid*";
+				else 
+					$objName = $namespace + ":a*";
+				
+				select -r $objName;
+				$groupName = "a" + $counter;
+				group -n $groupName;
+			}		
+			$counter++;
+		}
+	}	
+}
+
+
+//@author:Viola | Date: 01/18/2016
+//a proc that generates menger sponge geometry
+//inputs: iteration number, side length
+
+global proc mengerSponge(int $iteration, float $width, string $namespace){
+	
+	string $temp = ":" + $namespace;
+	if(`namespace -exists $temp` == 1){
+		confirmDialog -title "Error" -message "Namespace already exists!" -button "Cancel" -cancelButton "Cancel";
+	}
+	else{
+		namespace -set ":";
+		namespace -add $namespace;
+		namespace -set $namespace;
+		
+		//local variables
+		float $move_x, $move_y, $move_z;
+		string $groupName;
+		int $counter = 1;
+		string $objName;
+	
+		//transform matrix---------
+		vector $trans[] = {
+		<<0,0,-1>>, <<0,0,-2>>,<<1,0,0>>,<<1,0,-2>>,<<2,0,0>>,
+		<<2,0,-1>>,<<2,0,-2>>,<<0,1,0>>,<<0,1,-2>>,<<2,1,-2>>,
+		<<2,1,0>>,<<0,2,-1>>,<<0,2,-2>>,<<1,2,0>>,<<1,2,-2>>,
+		<<2,2,0>>,<<2,2,-1>>,<<2,2,-2>>,<<0,2,0>>};
+		//transform matrix end-----
+	
+		//main method
+		while($counter <= $iteration){
+			//the first iteration - generate the main obj
+			if($counter == 1){
+				polyCube -w $width -h $width -d $width;
+				addAttr -ln geomLabel -at byte;
+				string $name[] = `ls -sl`;
+				setAttr ($name[0] + ".geomLabel") 2;
+			}
+			/*grab the last iteration result and instance it; 
+			move it along the vectors stored in the transform matrix*/
+			else{
+				if($counter != 2){
+					$width *= 3;
+				}
+			
+				int $i;
+				for($i = 0; $i < 19; $i++){
+					instance;
+					vector $temp = $trans[$i];
+					$move_x = $temp.x * $width;
+					$move_y = $temp.y * $width;
+					$move_z = $temp.z * $width;
+				
+					move $move_x $move_y $move_z;
+				}
+			
+				if($counter == 2){
+					$objName = $namespace + ":pCube*";
+				}
+				else{
+					$objName = $namespace + ":a*";
+				}
+				select -r $objName;
+				$groupName = "mycube" + $counter;
+				group -n $groupName;
+			}
+			$counter++;
+		}
+	}
+}
+
+
+
+//@author: Viola | Date: 01/18/2016
+//a proc generating 3d fractal version of octahedron
+//inputs: iteraion number, side length
+
+global proc octahedron(int $iteration, float $width, string $namespace){
+	
+	string $temp = ":" + $namespace;
+	if(`namespace -exists $temp` == 1){
+		confirmDialog -title "Error" -message "Namespace already exists!" -button "Cancel" -cancelButton "Cancel";
+	}
+	else{
+		namespace -set ":";
+		namespace -add $namespace;
+		namespace -set $namespace;
+		
+		//local variables
+		float $move_x, $move_y, $move_z;
+		string $groupName;
+		int $counter = 1;
+		string $objName;
+		
+		//transform matrix--------
+			vector $trans[] = {
+				<<1, 0, 0>>, <<1, 0, -1>>, <<0, 0, -1>>, 
+				<<0.5, 0.5 * sqrt(2), -0.5>>, 
+				<<0.5, - 0.5 * sqrt(2), -0.5>>};
+		//transfrom matrix end----
+	
+		while($counter <= $iteration){
+			//on first iteration, create the obj and rotate it to be parallel to the X & Z axis
+			if($counter == 1){
+				polyPlatonicSolid -r $width -st 2 -n "octa";
+				rotate 0 45 0;
+				addAttr -ln geomLabel -at byte;
+				string $name[] = `ls -sl`;
+				setAttr ($name[0] + ".geomLabel") 3;
+			}
+			//instance the result of last iteration and move it along vectors
+			else{
+				if($counter != 2){
+					$width *= 2;
+				}
+			
+				int $i;
+				for($i = 0; $i < 5; $i ++){
+					instance;
+					vector $temp = $trans[$i];
+					$move_x = $temp.x * $width * sqrt(2);
+					$move_y = $temp.y * $width * sqrt(2);
+					$move_z = $temp.z * $width * sqrt(2);
+				
+					move $move_x $move_y $move_z;
+				}
+			
+				//grouping
+				if($counter == 2){
+					$objName = $namespace + ":octa*";
+				}
+				else{
+					$objName = $namespace + ":mySolid*";
+				}
+				select -r $objName;
+				$groupName = "mySolid" + $counter;
+				group -n $groupName;
+			}
+			$counter++;
+		}
+	}
+}
+
+
+
+//@author: Viola | Date: 01/18/2016
+//a proc that generates two types of 3d n-flake fractal geometry, dodecahedron & icosahedron
+//user inputs: side length, type, iteration number
+
+int $counter = 1;
+//scaling constant
+float $RAD_FACTOR[] = {0.7137*0.906/2.3296, 1/2.581926 / 1.014};
+float $NORM_FACTOR[] = {1.5, 1.25};
+	
+global proc nFlake(float $width, int $type, int $iteration, int $counter, string $namespace, float $RAD_FACTOR[], float $NORM_FACTOR[]){
+	
+	string $temp = ":" + $namespace;
+	//main method
+	if(`namespace -exists $temp` == 1){
+		confirmDialog -title "Error" -message "Namespace already exists!" -button "Cancel" -cancelButton "Cancel";
+	}
+	else{
+		namespace -set ":";
+		namespace -add $namespace;
+		namespace -set $namespace;
+		string $objName;
+		
+		while($counter <= $iteration){
+			//one first iteration make the original obj
+			if($counter == 1){
+				polyPlatonicSolid -r $width -st $type -n "pSolid";
+				addAttr -ln geomLabel -at byte;
+				string $name[] = `ls -sl`;
+				setAttr ($name[0] + ".geomLabel") ($type + 4);
+			}
+			//select the results of last iteration and generate geoms from the vertices
+			else{
+		
+				//get vertices position and normals
+				vector $data[], $norms[];
+				$width = $width * $RAD_FACTOR[$type];
+	    
+				$objName = $namespace + ":pSolid*";
+				select -r $objName;
+				string $name[] = `ls -sl`;
+				
+				int $j;
+				for($j = 0; $j < size($name) / 2; $j ++){
+					getVertices($name[$j], $data);
+					getNormals($name[$j], $norms);
+				}
+				//for each vetices generate an obj and move it to the right place 
+				int $i;
+				for($i = 0; $i < size($data); $i++){
+					vector $v = $data[$i];
+					vector $norm = $norms[$i];
+    
+   		 			float $x = $width * $norm.x * $NORM_FACTOR[$type];
+    				float $y = $width * $norm.y * $NORM_FACTOR[$type];
+    				float $z = $width * $norm.z * $NORM_FACTOR[$type];
+    	
+  		  			$x = $v.x - $x;
+    				$y = $v.y - $y;
+    				$z = $v.z - $z;
+	
+					namespace -set ":";
+					namespace -set $namespace;
+					
+					polyPlatonicSolid -r $width -st $type;
+					addAttr -ln geomLabel -at byte;
+					string $name[] = `ls -sl`;
+					setAttr ($name[0] + ".geomLabel") ($type + 4);
+					
+					move $x $y $z;
+				}
+			
+				//delete the result of last iteration and make a new group
+				string $tempobjName;		
+				if($counter == 2){
+					$tempobjName = $namespace + ":pSolid";
+				}
+				else{
+					$tempobjName = $namespace + ":nFlake";
+				}	
+				
+				select -r $tempobjName;
+				delete;
+				string $tempName = $namespace + ":pSolid*";
+				select -r $tempName;
+				group -n "nFlake";	
+			
+				//clear data and norms
+				clear($data);
+	    		clear($norms);		
+			}
+		
+			$counter++;
+		}	
+	}
+}
+
+//nFlake(1.0, 1, 4, 1, $RAD_FACTOR, $NORM_FACTOR);
+
+
+
+global proc clearNamespace(string $name){
+	string $temp = ":" + $name;
+	if(`namespace -exists $temp` == 0){
+		confirmDialog -title "Error" -message "Namespace does not exist!" -button "Cancel" -cancelButton "Cancel";
+	}
+	else{
+		namespace -rm $temp;
+	}
+}
+
+
+global proc string namespaceOperation(string $input, int $flag, int $namespaceCounter){
+	string $result;
+	
+	//default mode
+	if($flag == 0){
+		$result = "nFlake" + $namespaceCounter;
+	}
+	//user defined mode
+	else if($flag == 1){
+		$result = $input;
+	}
+	else{
+		//error;
+	}
+	
+	return $result;
+}
+
+global proc nFlakeGrouping(int $iteration, int $type, string $namespace){
+	
+	int $counter = 0;
+	int $factor[] = {20, 12};
+	print("a\n");
+	for($counter = 0; $counter < ($iteration - 2); $counter ++){
+		string $temp = $namespace + ":nFlake";
+		string $grpName[] = `listRelatives -path $temp`;
+		print $grpName;
+		
+		select -cl;
+		int $i = 1;
+		for($i = 1; $i < size($grpName) + 1; $i++){
+			select -add $grpName[$i - 1];
+			if($i % $factor[$type] == 0){
+				group;
+				select -cl;
+			}
+		}
+	}
+}
+
+global proc retrieve(){
+	string $name[] = `ls -sl`;
+	string $current[] = `listRelatives -path $name[0]`;
+	if(size($current) > 1){
+		select $current[0];
+		retrieve();
+	}
+	else if(size($current) == 1){
+		select -r $name[0];
+	//	print $name[0];
+	}
+	else{
+		//error;
+	}
+}
+
+

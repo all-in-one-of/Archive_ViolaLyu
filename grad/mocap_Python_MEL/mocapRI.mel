@@ -1,0 +1,127 @@
+// Malcolm Kesson
+// Nov 16 2012
+// Pre Shape Mel Script
+//
+global proc mocapRI() {
+// Get the name of the shape node
+string $shapeName = `rman ctxGetObject`;
+string $parents[] = `listRelatives -parent $shapeName`;
+string $tformNode = $parents[0];
+  
+// The node may hava a number in its name that we can use 
+// to set the random number generator
+int    $nodeNumber = `match "[0-9]+" $shapeName`;    
+if($nodeNumber != "") {
+    seed(int($nodeNumber));
+    }
+// Read the values from our interface
+string $attr;
+$attr = `rmanGetAttrName "mocap_datapath"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+string $datapath = `getAttr $attr`;
+  
+$attr = `rmanGetAttrName "mocap_geo"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+int $geo = `getAttr $attr`;
+  
+$attr = `rmanGetAttrName "mocap_scale"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+float $scale = `getAttr $attr`;
+  
+$attr = `rmanGetAttrName "mocap_width"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+float $width = `getAttr $attr`;
+  
+$attr = `rmanGetAttrName "mocap_taper"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+float $taper = `getAttr $attr`;
+  
+$attr = `rmanGetAttrName "mocap_trailMin"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+int $trailMin = `getAttr $attr`;
+  
+$attr = `rmanGetAttrName "mocap_trailMax"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+int $trailMax = `getAttr $attr`;
+  
+$attr = `rmanGetAttrName "mocap_geoNum"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+int $geoNum = `getAttr $attr`;
+  
+$attr = `rmanGetAttrName "mocap_numRand"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+float $numRand = `getAttr $attr`;
+  
+$attr = `rmanGetAttrName "mocap_jitter"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+float $jitter = `getAttr $attr`;
+  
+$attr = `rmanGetAttrName "mocap_seed"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+int $seed = `getAttr $attr`;
+  
+$attr = `rmanGetAttrName "mocap_step"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+int $step = `getAttr $attr`;
+  
+$attr = `rmanGetAttrName "mocap_cache"`;
+$attr = `rmanGetFullSharedGeometricAttrName $shapeName $attr`;
+int $cache = `getAttr $attr`;
+  
+python("from mocap_rman import MoCapRMan");
+// Use the shape node name for the name of the python variable that
+// "receives" the instance - avoids name collision of multiple instances.
+// The name is also used as an Id string for the instance. MocapRMan uses
+// the name to uniquify the ribs it generates.
+string $idStr = "\"" + $shapeName + "\"";
+$datapath = "\"" + $datapath + "\"";
+string $moStr = $shapeName + " = MoCapRMan(" + $idStr + ","
+                    + $datapath + "," + $scale + ")";
+  
+// Frame 1 always creates a new instance of MoCapRMan
+int $currentTime = `currentTime -q`;
+if($currentTime == 1) {
+    python($moStr);
+    print("Created a new instance of the database on frame 1\n");
+    }
+//float $dim[] = python( $shapeName + ".getFrameDimensions(" + $currentTime + ")" );
+//print $dim;
+//print "\n";
+// Ensure we only instance MoCapRMan once rather than for
+// each frame of animation.
+string $tryStr;
+$tryStr  = "try:\n";
+$tryStr += "    if mo == None:\n";
+$tryStr += "        " + $moStr + "\n";
+$tryStr += "except:\n";
+$tryStr += "    " + $moStr + "\n";
+python($tryStr);
+  
+  
+// Create the geometry
+if($cache != 2) {
+    string $action = "Compute";
+    if($cache == 1)
+        $action = "Reuse";
+    string $ribpath;
+    string $args = $trailMax + "," + $step + "," + $width + ",\"" + $action + "\"";
+    string $args1 = $trailMin + "," + $trailMax + "," + $step + "," + $width + "," + $taper + "," + $geoNum + "," + $numRand + "," + $jitter + "," + $seed +",\"" + $action + "\"";
+    if($geo == 0)
+        $ribpath = python($shapeName + ".writePoints(" + $args1 + ")");
+    else if($geo == 1)
+        $ribpath = python($shapeName + ".writeCurves(" + $args1 + ")");
+    else if($geo == 2)
+        $ribpath = python($shapeName + ".writeBlobby(" + $args + ")");
+    else {
+        $args += ",volume=True";
+        $ribpath = python($shapeName + ".writeBlobby(" + $args + ")");
+        }
+    print("Baking archive \"" + $ribpath + "\"\n");
+    RiReadArchive($ribpath);
+    // Ensure the proxy is not rendered
+    RiAttribute "visibility" "int camera" 0;
+    RiAttribute "visibility" "int transmission" 0;
+    RiAttribute "visibility" "int indirect" 0;
+    }
+}
+  
