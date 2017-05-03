@@ -1,0 +1,88 @@
+//----------------------
+//@author: Viola Lyu
+//@date: 02/09/2017
+//----------------------
+
+
+
+//----------------------
+//mynoise()
+//args--------
+//	sample: sample position of the noise value to return;
+//	roughness: each octave of noise is added to the previous
+//           values after being multiplied by this factor;
+//	lacunarity: increase in frequency when sampling successive octaves;
+//	octaves: layers of noise added together;
+//output------
+//	float, [-0.5,0.5];
+//----------------------
+
+float mynoise(vector sample; float roughness; float lacunarity; int octaves;)
+{
+	float sum = 0;
+	float weight = 1.0;
+	vector samp = sample;
+
+	for (int i=0; i<octaves+1; i++) 
+	{
+		sum += (noise(samp) - 0.5) * weight;
+		samp *= lacunarity;
+		weight *= roughness;
+	}
+	return sum;
+}
+
+//----------------------
+//mynoise()
+//args--------
+//	sample: sample position of the noise value to return;
+//	roughness: each octave of noise is added to the previous
+//           values after being multiplied by this factor;
+//	lacunarity: increase in frequency when sampling successive octaves;
+//	octaves: layers of noise added together;
+//output------
+//	vector, [-0.5,0.5];
+//----------------------
+
+vector mynoise(vector sample; float roughness; float lacunarity; int octaves;)
+{
+	vector sum    = 0;
+	float  weight = 1.0;
+	vector samp = sample;
+
+	for (int i=0; i<octaves+1; i++) 
+	{
+		sum += (noise(samp) - {0.5, 0.5, 0.5}) * weight;
+		samp *= lacunarity;
+        	weight *= roughness;
+	}
+	return sum;
+}
+
+//----------------------
+//mynoise()
+//args--------
+//	sample: sample position of the noise value to return;
+//	roughness: each octave of noise is added to the previous
+//           values after being multiplied by this factor;
+//	lacunarity: increase in frequency when sampling successive octaves;
+//	octaves: layers of noise added together;
+//	exponent: a smoothing factor
+//output------
+//	float, [0,1];
+//----------------------
+
+float mynoise(vector sample; float roughness; float lacunarity; int octaves; float exponent;)
+{
+	float  sum    = 0;
+	float  weight = 1.0;
+	vector samp = sample;
+
+	for (int i=0; i<octaves+1; i++) 
+	{
+ 		sum += pow(abs(fit01(noise(samp), -1.0, 1.0)), exponent) * weight;
+		samp *= lacunarity;
+		weight *= roughness;
+	}
+	return sum;
+}
