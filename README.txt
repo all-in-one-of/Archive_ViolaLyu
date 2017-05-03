@@ -5,6 +5,7 @@ root
 	
 	|-- grad 			
 		//some projects I did during graduate studies; mocap project involves modification based on Professor Malcolm Kesson's original version of parsing motion capture data and utilizing it.
+	
 	|-- THUHelper
 		//a collaborative project where I did classroom and classroom recommendation related parts; 
 
